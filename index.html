@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Warrior</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial;}
+body{
+margin:0;
+background:linear-gradient(135deg,#0f172a,#1e293b);
+color:#fff;
+}
+
+header{
+text-align:center;
+padding:25px;
+background:#000;
+}
+
+h1{margin:0;color:#38bdf8;}
+p{opacity:0.8}
+
+.container{padding:20px;max-width:1000px;margin:auto;}
+
+.card{
+background:#ffffff10;
+padding:15px;
+border-radius:12px;
+margin:10px 0;
+backdrop-filter:blur(10px);
+border:1px solid #ffffff20;
+}
+
+button{
+background:#38bdf8;
+border:none;
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+margin-top:5px;
+width:100%;
+font-weight:bold;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+outline:none;
+}
+
+.hidden{display:none;}
+
+.row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:10px;
+}
+
+a button{
+background:#22c55e;
+}
+
+.small{font-size:13px;opacity:0.8}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>English Warrior</h1>
+<p>Knowledge is Your Weapon</p>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="card">
+<h3>Student Login</h3>
+<input id="name" placeholder="Name">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+</div>
+
+<!-- PROFILE -->
+<div class="card hidden" id="profileBox">
+<h3>Student Profile</h3>
+<input id="college" placeholder="School/College Name">
+<input id="batch" placeholder="Batch (HSC 27/28)">
+<input id="phone" placeholder="Phone">
+<input id="address" placeholder="Address">
+<button onclick="saveProfile()">Save Profile</button>
+</div>
+
+<!-- COURSES -->
+<div class="card">
+<h3>Courses</h3>
+
+<div class="row">
+
+<div class="card">
+<h4>HSC English</h4>
+<p>1500৳</p>
+<button onclick="buy('course')">Buy Course</button>
+<button onclick="openCourse()">Enter</button>
+</div>
+
+<div class="card">
+<h4>Exam Batch</h4>
+<p>500৳</p>
+<button onclick="buy('exam')">Buy Exam</button>
+<button onclick="startExam()">Enter Exam</button>
+</div>
+
+</div>
+</div>
+
+<!-- PAYMENT -->
+<div class="card hidden" id="payBox">
+<h3>bKash Payment</h3>
+<p>Send Money: <b>01601422827</b></p>
+<p class="small">After payment enter Transaction ID</p>
+<input id="trx" placeholder="Transaction ID">
+<button onclick="submitPay()">Submit</button>
+</div>
+
+<!-- COURSE CONTENT -->
+<div class="card hidden" id="courseBox">
+<h3>Course Videos</h3>
+<div id="videos"></div>
+</div>
+
+<!-- EXAM -->
+<div class="card hidden" id="examBox"></div>
+
+<!-- DOCS -->
+<div class="card">
+<h3>Important Documents</h3>
+<p class="small">Only approved students can access</p>
+<button onclick="alert('Coming soon in admin upload system')">View Docs</button>
+</div>
+
+<!-- CONTACT -->
+<div class="card">
+<h3>Contact</h3>
+
+<a href="https://wa.me/8801601422827"><button>WhatsApp</button></a>
+
+<a href="https://www.facebook.com/profile.php?id=61573261565320"><button>Facebook Page</button></a>
+
+<a href="https://youtube.com/@hasibulislam-pv7wp"><button>YouTube Channel</button></a>
+
+</div>
+
+<!-- ADMIN -->
+<div class="card">
+<h3>Admin Panel</h3>
+<input id="adminPass" type="password" placeholder="Admin Password">
+<button onclick="adminLogin()">Login</button>
+
+<div id="admin" class="hidden">
+<h4>Add Video</h4>
+<input id="vt" placeholder="Title">
+<input id="vl" placeholder="YouTube Embed Link">
+<button onclick="addVideo()">Add</button>
+
+<div id="payList"></div>
+</div>
+</div>
+
+</div>
+
+<script>
+
+let users = JSON.parse(localStorage.getItem("users"))||{};
+let currentUser = localStorage.getItem("currentUser");
+let payments = JSON.parse(localStorage.getItem("payments"))||[];
+let videos = JSON.parse(localStorage.getItem("videos"))||[];
+
+function register(){
+users[name.value]={pass:pass.value,course:false,exam:false};
+localStorage.setItem("users",JSON.stringify(users));
+msg.innerText="Registered";
+}
+
+function login(){
+if(users[name.value] && users[name.value].pass===pass.value){
+currentUser=name.value;
+localStorage.setItem("currentUser",currentUser);
+msg.innerText="Welcome "+currentUser;
+profileBox.classList.remove("hidden");
+}else msg.innerText="Wrong login";
+}
+
+function saveProfile(){
+users[currentUser].profile={
+college:college.value,
+batch:batch.value,
+phone:phone.value,
+address:address.value
+}
+localStorage.setItem("users",JSON.stringify(users));
+alert("Profile saved");
+}
+
+let type="";
+
+function buy(t){
+if(!currentUser) return alert("Login first");
+type=t;
+payBox.classList.remove("hidden");
+}
+
+function submitPay(){
+payments.push({user:currentUser,type:type,trx:trx.value});
+localStorage.setItem("payments",JSON.stringify(payments));
+alert("Submitted");
+}
+
+function adminLogin(){
+if(adminPass.value==="admin123"){
+admin.classList.remove("hidden");
+loadPay();
+}
+}
+
+function loadPay(){
+payList.innerHTML="<h4>Payments</h4>";
+payments.forEach((p,i)=>{
+payList.innerHTML+=`
+<div class="card">
+${p.user} - ${p.type} - ${p.trx}
+<button onclick="approve(${i})">Approve</button>
+</div>`;
+});
+}
+
+function approve(i){
+let p=payments[i];
+users[p.user][p.type]=true;
+payments.splice(i,1);
+localStorage.setItem("users",JSON.stringify(users));
+localStorage.setItem("payments",JSON.stringify(payments));
+loadPay();
+}
+
+function openCourse(){
+if(!users[currentUser]?.course) return alert("Buy first");
+
+courseBox.classList.remove("hidden");
+videosBox();
+}
+
+function videosBox(){
+videosDiv.innerHTML="";
+videos.forEach(v=>{
+videosDiv.innerHTML+=`
+<div class="card">
+<h4>${v.title}</h4>
+<iframe width="100%" height="200" src="${v.link}"></iframe>
+</div>`;
+});
+}
+
+function addVideo(){
+videos.push({title:vt.value,link:vl.value});
+localStorage.setItem("videos",JSON.stringify(videos));
+alert("Added");
+}
+
+function startExam(){
+if(!users[currentUser]?.exam) return alert("Buy exam first");
+
+examBox.classList.remove("hidden");
+examBox.innerHTML=`
+<div class="card">
+<p>1. Capital of Bangladesh?</p>
+<input type="radio" name="q1" value="a">Dhaka<br>
+<input type="radio" name="q1" value="b">Chittagong<br>
+</div>
+<button onclick="submitExam()">Submit</button>
+<h3 id="result"></h3>
+`;
+}
+
+function submitExam(){
+let s=document.querySelector('input[name=q1]:checked');
+result.innerText = (s?.value==="a") ? "Score: 1" : "Score: 0";
+}
+
+</script>
+
+</body>
+</html>
